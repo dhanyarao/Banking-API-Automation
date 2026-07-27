@@ -1,5 +1,9 @@
 # Banking API Automation – Practical Package
 
+[![CI](https://github.com/dhanyarao/Banking-API-Automation/actions/workflows/ci.yml/badge.svg)](https://github.com/dhanyarao/Banking-API-Automation/actions/workflows/ci.yml)
+[![Allure Report](https://img.shields.io/badge/Allure-Report-orange?logo=allure)](https://dhanyarao.github.io/Banking-API-Automation/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 This package contains **three complete automation approaches** for the same Banking APIs:
 
 1. **Postman + Newman** (no-code / low-code)
