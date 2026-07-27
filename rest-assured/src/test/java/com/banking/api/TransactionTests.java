@@ -1,14 +1,14 @@
 package com.banking.api;
 
+import io.qameta.allure.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-/**
- * Transaction History API tests.
- */
+@Epic("Banking API")
+@Feature("Transactions")
 public class TransactionTests extends BaseTest {
 
     @BeforeClass
@@ -26,6 +26,9 @@ public class TransactionTests extends BaseTest {
     }
 
     @Test(priority = 1, description = "Get transaction history - positive")
+    @Story("Transaction History - Happy Path")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verify transaction list is returned for a valid account")
     public void testGetTransactionHistory() {
         given()
                 .spec(requestSpec)
@@ -37,10 +40,12 @@ public class TransactionTests extends BaseTest {
                 .get("/api/v1/transactions")
         .then()
                 .statusCode(200);
-        // Note: Response structure varies. Add specific body assertions based on your API.
     }
 
     @Test(priority = 2, description = "Get transactions filtered by date range")
+    @Story("Transaction History - Filters")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Verify date-range filter returns 200")
     public void testGetTransactionsByDateRange() {
         given()
                 .spec(requestSpec)

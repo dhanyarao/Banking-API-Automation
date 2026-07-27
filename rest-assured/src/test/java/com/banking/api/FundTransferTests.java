@@ -1,14 +1,14 @@
 package com.banking.api;
 
+import io.qameta.allure.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-/**
- * Fund Transfer API tests - positive and negative scenarios.
- */
+@Epic("Banking API")
+@Feature("Fund Transfer")
 public class FundTransferTests extends BaseTest {
 
     @BeforeClass
@@ -26,6 +26,9 @@ public class FundTransferTests extends BaseTest {
     }
 
     @Test(priority = 1, description = "Successful fund transfer")
+    @Story("Transfer - Happy Path")
+    @Severity(SeverityLevel.BLOCKER)
+    @Description("Verify successful transfer returns 200/201 and a transaction identifier")
     public void testSuccessfulTransfer() {
         String body = String.format(
                 "{\"fromAccount\":\"%s\",\"toAccount\":\"%s\",\"amount\":500.00,\"currency\":\"INR\",\"remarks\":\"RestAssured automated transfer\"}",
@@ -47,6 +50,9 @@ public class FundTransferTests extends BaseTest {
     }
 
     @Test(priority = 2, description = "Transfer with insufficient funds should return 400")
+    @Story("Transfer - Negative")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verify transfer fails with 400 when amount exceeds available balance")
     public void testInsufficientFunds() {
         String body = String.format(
                 "{\"fromAccount\":\"%s\",\"toAccount\":\"%s\",\"amount\":99999999.00,\"currency\":\"INR\",\"remarks\":\"Should fail\"}",
@@ -68,8 +74,10 @@ public class FundTransferTests extends BaseTest {
     }
 
     @Test(priority = 3, description = "Transfer with missing mandatory fields should return 400")
+    @Story("Transfer - Negative")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Verify validation error when required fields are missing")
     public void testMissingMandatoryFields() {
-        // Only fromAccount, missing toAccount and amount
         String body = String.format("{\"fromAccount\":\"%s\"}", FROM_ACCOUNT);
 
         given()
@@ -83,6 +91,9 @@ public class FundTransferTests extends BaseTest {
     }
 
     @Test(priority = 4, description = "Transfer with zero amount should be rejected")
+    @Story("Transfer - Negative")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Verify zero amount is rejected by the API")
     public void testZeroAmount() {
         String body = String.format(
                 "{\"fromAccount\":\"%s\",\"toAccount\":\"%s\",\"amount\":0,\"currency\":\"INR\",\"remarks\":\"Zero amount\"}",
