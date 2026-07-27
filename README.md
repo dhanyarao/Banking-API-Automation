@@ -1,37 +1,22 @@
 # Banking API Automation – Practical Package
 
-This package contains **three complete automation approaches** for the same Banking APIs we covered in the test cases:
+This package contains **three complete automation approaches** for the same Banking APIs:
 
 1. **Postman + Newman** (no-code / low-code)
-2. **Rest Assured + TestNG** (Java code-based)
+2. **Rest Assured + TestNG** (Java)
 3. **Playwright** (JavaScript) – modern API testing with best practices
 
-All three cover the core scenarios:
+All three cover:
 - Login (valid + invalid)
-- Get Account Balance (positive + negative)
-- Fund Transfer (success, insufficient funds, missing fields)
+- Account Balance
+- Fund Transfer (success, insufficient funds, validation errors)
 - Transaction History
 
 ---
 
-## 1. Postman + Newman (Recommended starting point)
+## 1. Postman + Newman
 
-### Folder: `postman/`
-
-| File | Purpose |
-|------|---------|
-| `Banking_API_Automation.postman_collection.json` | Ready-to-import collection with folders & Tests |
-| `Banking-Dev.postman_environment.json` | Environment variables (base_url, credentials, accounts) |
-| `test-data.csv` | Sample data file for data-driven runs |
-| `run-newman.sh` | One-click runner script with HTML + JUnit reports |
-
-### How to use
-
-1. Open Postman → Import the `.postman_collection.json` and `.postman_environment.json`
-2. Select environment **Banking-Dev**
-3. Update `base_url`, `username`, `password`, `account_id` etc. to match your actual API
-4. Run the collection manually first (Collection Runner)
-5. For CLI automation:
+**Folder:** `postman/`
 
 ```bash
 cd postman
@@ -43,7 +28,6 @@ Or manually:
 
 ```bash
 npm install -g newman newman-reporter-htmlextra
-
 newman run Banking_API_Automation.postman_collection.json \
   -e Banking-Dev.postman_environment.json \
   --reporters cli,htmlextra,junit \
@@ -52,44 +36,21 @@ newman run Banking_API_Automation.postman_collection.json \
 
 ---
 
-## 2. Rest Assured + TestNG (Java)
+## 2. Rest Assured (Java)
 
-### Folder: `rest-assured/`
-
-```
-rest-assured/
-├── pom.xml
-└── src/test/
-    ├── java/com/banking/api/
-    │   ├── BaseTest.java          ← common setup + constants
-    │   ├── AuthTests.java
-    │   ├── AccountTests.java
-    │   ├── FundTransferTests.java
-    │   └── TransactionTests.java
-    └── resources/
-        └── testng.xml
-```
-
-### How to run
-
-1. Open the `rest-assured` folder in IntelliJ / Eclipse / VS Code
-2. Update constants in `BaseTest.java` (BASE_URL, USERNAME, PASSWORD, ACCOUNT_ID…)
-3. Run:
+**Folder:** `rest-assured/`
 
 ```bash
 cd rest-assured
+# Update constants in BaseTest.java first
 mvn clean test
 ```
 
-Or run individual classes from the IDE.
-
 ---
 
-## 3. Playwright (JavaScript) – Modern & Recommended for Full-Stack
+## 3. Playwright (JavaScript)
 
-### Folder: `playwright/`
-
-Clean structure with fixtures, helpers, environment config and HTML reports.
+**Folder:** `playwright/`
 
 ```bash
 cd playwright
@@ -99,35 +60,62 @@ npm test
 npm run test:report
 ```
 
-See `playwright/README.md` for full details and best practices.
+See `playwright/README.md` for fixtures, helpers and best practices.
 
-| Feature | Postman + Newman | Rest Assured | Playwright |
-|---------|------------------|--------------|------------|
-| Language | None / JS scripts | Java | JavaScript / TypeScript |
-| Same tool for UI later | No | No | **Yes** |
-| Custom fixtures | Limited | Manual | Native |
-| Learning curve | Lowest | Medium | Low-Medium |
+| Feature              | Postman + Newman | Rest Assured | Playwright      |
+|----------------------|------------------|--------------|-----------------|
+| Language             | None / JS        | Java         | JavaScript      |
+| Same tool for UI     | No               | No           | **Yes**         |
+| Custom fixtures      | Limited          | Manual       | Native          |
+| Learning curve       | Lowest           | Medium       | Low-Medium      |
+
+---
+
+## Continuous Integration (GitHub Actions)
+
+Workflow file: `.github/workflows/ci.yml`
+
+Runs automatically on every **push** and **pull request** to `main`.
+
+| Job            | Tool              | Output                          |
+|----------------|-------------------|---------------------------------|
+| `playwright`   | Playwright        | HTML + JSON report (artifact)   |
+| `newman`       | Postman + Newman  | HTML + JUnit report (artifact)  |
+| `rest-assured` | Maven + TestNG    | Surefire reports (artifact)     |
+
+### Using real credentials in CI
+
+1. Repo → **Settings → Secrets and variables → Actions**
+2. Add these secrets:
+
+| Secret           | Example                    |
+|------------------|----------------------------|
+| `BASE_URL`       | `https://api.yourbank.com` |
+| `API_USERNAME`   | `testuser01`               |
+| `API_PASSWORD`   | `your-real-password`       |
+| `ACCOUNT_ID`     | `1234567890`               |
+| `FROM_ACCOUNT`   | `1234567890`               |
+| `TO_ACCOUNT`     | `9876543210`               |
+
+Until real secrets are added, the workflow uses placeholder values (tests will fail against a non-existent API – expected).
+
+You can also trigger the workflow manually from the **Actions** tab.
 
 ---
 
 ## Recommended Learning Path
 
-1. Import & run the Postman collection manually → understand the flow
-2. Run it with Newman → see HTML reports
-3. Open the Rest Assured project → map each Postman request to the corresponding Java test
-4. Explore the Playwright suite → notice the fixture pattern
-5. Add more assertions and negative cases yourself
+1. Run the Postman collection manually → understand the flow
+2. Run it with Newman → study the HTML report
+3. Explore Rest Assured → map each request to a Java test
+4. Explore Playwright → notice the fixture pattern for auth
+5. Add your own negative cases and assertions
 
 ---
 
 ## Instructor Notes
 
-- Always keep the **Login** request first so the token is available for subsequent calls.
-- In real banking projects we also add:
-  - Request/Response logging
-  - Retry logic for flaky network
-  - Allure / Extent reports
-  - Data-driven testing from Excel/CSV
-  - Parallel execution (carefully – banking APIs often have concurrency limits)
+- Keep **Login** first so the token is available for subsequent calls.
+- In real banking projects we also add: request/response logging, retry logic, Allure/Extent reports, data-driven testing from Excel/CSV, and careful parallel execution (banking APIs often have concurrency limits).
 
 Happy automating!
