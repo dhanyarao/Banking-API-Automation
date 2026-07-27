@@ -1,0 +1,22 @@
+{
+  "name": "banking-api-playwright",
+  "version": "1.0.0",
+  "description": "Banking API Automation using Playwright - practical suite for Login, Balance, Fund Transfer & Transactions",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:auth": "npx playwright test tests/auth.spec.js",
+    "test:accounts": "npx playwright test tests/accounts.spec.js",
+    "test:transfer": "npx playwright test tests/fund-transfer.spec.js",
+    "test:transactions": "npx playwright test tests/transactions.spec.js",
+    "test:report": "npx playwright show-report",
+    "test:debug": "npx playwright test --debug"
+  },
+  "keywords": ["playwright", "api-testing", "banking", "automation"],
+  "author": "Banking API Learning Project",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "dotenv": "^16.4.5"
+  }
+}
