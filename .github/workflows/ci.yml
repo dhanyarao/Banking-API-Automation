@@ -17,16 +17,37 @@ permissions:
   id-token: write
   actions: read
 
+env:
+  MOCK_BASE_URL: http://localhost:8089
+
 jobs:
   playwright:
     name: Playwright API Tests (Allure)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: playwright
     steps:
       - uses: actions/checkout@v4
+      - name: Start WireMock (mock banking API)
+        working-directory: ${{ github.workspace }}
+        run: |
+          docker run -d --name wiremock \
+            -p 8089:8080 \
+            -v "${{ github.workspace }}/wiremock/mappings:/home/wiremock/mappings" \
+            wiremock/wiremock:3.9.1 \
+            --global-response-templating --verbose
+          echo "Waiting for WireMock..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8089/__admin/mappings >/dev/null 2>&1; then
+              echo "WireMock is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs wiremock || true
+          exit 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -34,15 +55,15 @@ jobs:
           cache-dependency-path: playwright/package-lock.json
       - run: npm ci || npm install
       - run: npx playwright install --with-deps chromium
-      - name: Create .env from secrets / defaults
+      - name: Create .env pointing at WireMock
         run: |
           cat > config/.env << EOFENV
-          BASE_URL=${{ secrets.BASE_URL || 'https://api.yourbank.com' }}
-          USERNAME=${{ secrets.API_USERNAME || 'testuser01' }}
-          PASSWORD=${{ secrets.API_PASSWORD || 'SecurePass@123' }}
-          ACCOUNT_ID=${{ secrets.ACCOUNT_ID || '1234567890' }}
-          FROM_ACCOUNT=${{ secrets.FROM_ACCOUNT || '1234567890' }}
-          TO_ACCOUNT=${{ secrets.TO_ACCOUNT || '9876543210' }}
+          BASE_URL=${{ env.MOCK_BASE_URL }}
+          USERNAME=testuser01
+          PASSWORD=SecurePass@123
+          ACCOUNT_ID=1234567890
+          FROM_ACCOUNT=1234567890
+          TO_ACCOUNT=9876543210
           EOFENV
       - name: Download previous Allure history (Playwright)
         uses: dawidd6/action-download-artifact@v6
@@ -54,11 +75,11 @@ jobs:
           branch: main
           if_no_artifact_found: warn
         continue-on-error: true
-      - name: Run Playwright API tests
+      - name: Run Playwright API tests against WireMock
         run: npx playwright test
         env:
           CI: true
-        continue-on-error: true
+          BASE_URL: ${{ env.MOCK_BASE_URL }}
       - name: Install Allure CLI
         if: always()
         run: |
@@ -74,12 +95,11 @@ jobs:
           if [ -d allure-history-prev/history ]; then
             mkdir -p allure-results/history
             cp -r allure-history-prev/history/* allure-results/history/ || true
-            echo "Restored Allure history for trends"
           fi
           if [ "$(ls -A allure-results 2>/dev/null | grep -v history)" ]; then
             allure generate allure-results --clean -o allure-report
           else
-            echo "<html><body><h2>No Allure results generated</h2></body></html>" > allure-report/index.html
+            echo "<html><body><h2>No Allure results</h2></body></html>" > allure-report/index.html
           fi
           mkdir -p allure-history-out
           if [ -d allure-report/history ]; then
@@ -92,7 +112,7 @@ jobs:
           name: allure-report-playwright
           path: playwright/allure-report/
           retention-days: 30
-      - name: Upload Allure history (for next run trends)
+      - name: Upload Allure history
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -100,46 +120,51 @@ jobs:
           path: playwright/allure-history-out/
           retention-days: 90
           overwrite: true
-      - name: Upload Playwright HTML report
+      - name: Stop WireMock
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-html-report
-          path: playwright/playwright-report/
-          retention-days: 14
+        working-directory: ${{ github.workspace }}
+        run: docker stop wiremock || true
 
   newman:
-    name: Newman (Postman Collection)
+    name: Newman (Postman + WireMock)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: postman
     steps:
       - uses: actions/checkout@v4
+      - name: Start WireMock (mock banking API)
+        working-directory: ${{ github.workspace }}
+        run: |
+          docker run -d --name wiremock \
+            -p 8089:8080 \
+            -v "${{ github.workspace }}/wiremock/mappings:/home/wiremock/mappings" \
+            wiremock/wiremock:3.9.1 \
+            --global-response-templating --verbose
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8089/__admin/mappings >/dev/null 2>&1 && echo "WireMock is up" && exit 0
+            sleep 2
+          done
+          docker logs wiremock || true
+          exit 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - run: |
           npm install -g newman
           npm install -g newman-reporter-htmlextra
-      - name: Run Newman collection
+      - name: Run Newman collection against WireMock
         run: |
           mkdir -p ../newman-report
           newman run Banking_API_Automation.postman_collection.json \
-            -e Banking-Dev.postman_environment.json \
-            --env-var "base_url=${{ secrets.BASE_URL || 'https://api.yourbank.com' }}" \
-            --env-var "username=${{ secrets.API_USERNAME || 'testuser01' }}" \
-            --env-var "password=${{ secrets.API_PASSWORD || 'SecurePass@123' }}" \
-            --env-var "account_id=${{ secrets.ACCOUNT_ID || '1234567890' }}" \
-            --env-var "from_account=${{ secrets.FROM_ACCOUNT || '1234567890' }}" \
-            --env-var "to_account=${{ secrets.TO_ACCOUNT || '9876543210' }}" \
-            --delay-request 300 \
+            -e Banking-Mock.postman_environment.json \
+            --env-var "base_url=${{ env.MOCK_BASE_URL }}" \
+            --delay-request 200 \
             --reporters cli,htmlextra,junit \
             --reporter-htmlextra-export ../newman-report/banking-api-report.html \
             --reporter-junit-export ../newman-report/junit-results.xml \
-            --reporter-htmlextra-title "Banking API - Newman CI Report"
-        continue-on-error: true
+            --reporter-htmlextra-title "Banking API - Newman + WireMock CI"
       - name: Upload Newman HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -147,16 +172,34 @@ jobs:
           name: newman-report
           path: newman-report/
           retention-days: 14
+      - name: Stop WireMock
+        if: always()
+        working-directory: ${{ github.workspace }}
+        run: docker stop wiremock || true
 
   rest-assured:
-    name: Rest Assured + Allure
+    name: Rest Assured + Allure + WireMock
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: rest-assured
     steps:
       - uses: actions/checkout@v4
+      - name: Start WireMock (mock banking API)
+        working-directory: ${{ github.workspace }}
+        run: |
+          docker run -d --name wiremock \
+            -p 8089:8080 \
+            -v "${{ github.workspace }}/wiremock/mappings:/home/wiremock/mappings" \
+            wiremock/wiremock:3.9.1 \
+            --global-response-templating --verbose
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8089/__admin/mappings >/dev/null 2>&1 && echo "WireMock is up" && exit 0
+            sleep 2
+          done
+          docker logs wiremock || true
+          exit 1
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -172,23 +215,22 @@ jobs:
           branch: main
           if_no_artifact_found: warn
         continue-on-error: true
-      - name: Restore Allure history before tests
+      - name: Restore Allure history
         run: |
           mkdir -p target/allure-results
           if [ -d allure-history-prev/history ]; then
             mkdir -p target/allure-results/history
             cp -r allure-history-prev/history/* target/allure-results/history/ || true
           fi
-      - name: Run Maven tests
+      - name: Run Maven tests against WireMock
         run: mvn -B clean test
-        continue-on-error: true
         env:
-          BASE_URL: ${{ secrets.BASE_URL || 'https://api.yourbank.com' }}
-          API_USERNAME: ${{ secrets.API_USERNAME || 'testuser01' }}
-          API_PASSWORD: ${{ secrets.API_PASSWORD || 'SecurePass@123' }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID || '1234567890' }}
-          FROM_ACCOUNT: ${{ secrets.FROM_ACCOUNT || '1234567890' }}
-          TO_ACCOUNT: ${{ secrets.TO_ACCOUNT || '9876543210' }}
+          BASE_URL: ${{ env.MOCK_BASE_URL }}
+          API_USERNAME: testuser01
+          API_PASSWORD: SecurePass@123
+          ACCOUNT_ID: "1234567890"
+          FROM_ACCOUNT: "1234567890"
+          TO_ACCOUNT: "9876543210"
       - name: Generate Allure Report
         if: always()
         run: |
@@ -215,7 +257,7 @@ jobs:
           name: allure-report-rest-assured
           path: rest-assured/target/site/allure-maven-plugin/
           retention-days: 30
-      - name: Upload Allure history (for next run trends)
+      - name: Upload Allure history
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -223,13 +265,10 @@ jobs:
           path: rest-assured/allure-history-out/
           retention-days: 90
           overwrite: true
-      - name: Upload Surefire reports
+      - name: Stop WireMock
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: rest-assured-surefire
-          path: rest-assured/target/surefire-reports/
-          retention-days: 14
+        working-directory: ${{ github.workspace }}
+        run: docker stop wiremock || true
 
   publish-pages:
     name: Publish Allure to GitHub Pages
@@ -271,7 +310,7 @@ jobs:
           </head>
           <body>
             <h1>Banking API Automation</h1>
-            <p>Latest Allure reports (with history/trends when available).</p>
+            <p>Latest Allure reports (tests run against WireMock in CI).</p>
             <div class="card"><h2><a href="./playwright/">Playwright API Tests →</a></h2></div>
             <div class="card"><h2><a href="./rest-assured/">Rest Assured (Java) Tests →</a></h2></div>
             <p>Repo: <a href="https://github.com/dhanyarao/Banking-API-Automation">dhanyarao/Banking-API-Automation</a></p>
@@ -299,4 +338,5 @@ jobs:
           echo "Playwright   → ${{ needs.playwright.result }}"
           echo "Newman       → ${{ needs.newman.result }}"
           echo "Rest Assured → ${{ needs.rest-assured.result }}"
+          echo "All jobs run against WireMock (localhost:8089)"
           echo "Reports → https://dhanyarao.github.io/Banking-API-Automation/"
