@@ -1,0 +1,20 @@
+{
+  "name": "Get Balance - Valid Token",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/api/v1/accounts/.*/balance",
+    "headers": {
+      "Authorization": {"matches": "Bearer .+"}
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "accountId": "1234567890",
+      "availableBalance": 25000.50,
+      "ledgerBalance": 25000.50,
+      "currency": "INR"
+    }
+  }
+}

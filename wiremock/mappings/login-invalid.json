@@ -1,0 +1,16 @@
+{
+  "name": "Login - Invalid Credentials",
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/auth/login"
+  },
+  "response": {
+    "status": 401,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "message": "Invalid credentials",
+      "error": "UNAUTHORIZED"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Get Balance - Missing or Invalid Token",
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/api/v1/accounts/.*/balance"
+  },
+  "response": {
+    "status": 401,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "message": "Unauthorized - missing or invalid token",
+      "error": "UNAUTHORIZED"
+    }
+  }
+}
