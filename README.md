@@ -24,16 +24,6 @@ chmod +x run-newman.sh
 ./run-newman.sh
 ```
 
-Or manually:
-
-```bash
-npm install -g newman newman-reporter-htmlextra
-newman run Banking_API_Automation.postman_collection.json \
-  -e Banking-Dev.postman_environment.json \
-  --reporters cli,htmlextra,junit \
-  --reporter-htmlextra-export reports/banking-api-report.html
-```
-
 ---
 
 ## 2. Rest Assured (Java)
@@ -42,8 +32,8 @@ newman run Banking_API_Automation.postman_collection.json \
 
 ```bash
 cd rest-assured
-# Update constants in BaseTest.java first
 mvn clean test
+mvn allure:report   # or mvn allure:serve
 ```
 
 ---
@@ -55,38 +45,52 @@ mvn clean test
 ```bash
 cd playwright
 npm install
-cp config/.env.example config/.env   # edit with real values
+cp config/.env.example config/.env
 npm test
-npm run test:report
+npm run test:allure
 ```
-
-See `playwright/README.md` for fixtures, helpers and best practices.
 
 | Feature              | Postman + Newman | Rest Assured | Playwright      |
 |----------------------|------------------|--------------|-----------------|
 | Language             | None / JS        | Java         | JavaScript      |
 | Same tool for UI     | No               | No           | **Yes**         |
 | Custom fixtures      | Limited          | Manual       | Native          |
-| Learning curve       | Lowest           | Medium       | Low-Medium      |
+| Allure reporting     | Via Newman HTML  | Yes          | Yes             |
 
 ---
 
-## Continuous Integration (GitHub Actions)
+## Continuous Integration + GitHub Pages
 
-Workflow file: `.github/workflows/ci.yml`
+Workflow: `.github/workflows/ci.yml`
 
-Runs automatically on every **push** and **pull request** to `main`.
+Runs on every push / PR to `main`:
 
-| Job            | Tool              | Output                          |
-|----------------|-------------------|---------------------------------|
-| `playwright`   | Playwright        | HTML + JSON report (artifact)   |
-| `newman`       | Postman + Newman  | HTML + JUnit report (artifact)  |
-| `rest-assured` | Maven + TestNG    | Surefire reports (artifact)     |
+| Job              | Tool              | Output                    |
+|------------------|-------------------|---------------------------|
+| `playwright`     | Playwright        | Allure + HTML artifacts   |
+| `newman`         | Postman + Newman  | HTML + JUnit artifacts    |
+| `rest-assured`   | Maven + TestNG    | Allure + Surefire         |
+| `publish-pages`  | GitHub Pages      | Live Allure reports       |
 
-### Using real credentials in CI
+### Live Allure Reports
 
-1. Repo → **Settings → Secrets and variables → Actions**
-2. Add these secrets:
+**URL:** https://dhanyarao.github.io/Banking-API-Automation/
+
+| Path | Report |
+|------|--------|
+| `/` | Landing page |
+| `/playwright/` | Playwright Allure report |
+| `/rest-assured/` | Rest Assured Allure report |
+
+### One-time setup for GitHub Pages
+
+1. Repo → **Settings → Pages**
+2. **Source** → select **GitHub Actions**
+3. Save
+
+Then push to `main` (or run the workflow manually). Reports will appear at the URL above.
+
+### Secrets (recommended)
 
 | Secret           | Example                    |
 |------------------|----------------------------|
@@ -97,25 +101,14 @@ Runs automatically on every **push** and **pull request** to `main`.
 | `FROM_ACCOUNT`   | `1234567890`               |
 | `TO_ACCOUNT`     | `9876543210`               |
 
-Until real secrets are added, the workflow uses placeholder values (tests will fail against a non-existent API – expected).
-
-You can also trigger the workflow manually from the **Actions** tab.
-
 ---
 
 ## Recommended Learning Path
 
-1. Run the Postman collection manually → understand the flow
-2. Run it with Newman → study the HTML report
-3. Explore Rest Assured → map each request to a Java test
-4. Explore Playwright → notice the fixture pattern for auth
-5. Add your own negative cases and assertions
-
----
-
-## Instructor Notes
-
-- Keep **Login** first so the token is available for subsequent calls.
-- In real banking projects we also add: request/response logging, retry logic, Allure/Extent reports, data-driven testing from Excel/CSV, and careful parallel execution (banking APIs often have concurrency limits).
+1. Run Postman collection manually
+2. Run Newman + study HTML report
+3. Explore Rest Assured + Allure annotations
+4. Explore Playwright fixtures + Allure
+5. Watch reports update on GitHub Pages after each push
 
 Happy automating!
