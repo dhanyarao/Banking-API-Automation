@@ -1,0 +1,22 @@
+# Node
+node_modules/
+playwright/playwright-report/
+playwright/test-results/
+playwright/allure-results/
+playwright/allure-report/
+
+# Java / Maven
+rest-assured/target/
+*.class
+*.jar
+*.war
+
+# Env & secrets
+**/.env
+*.log
+.DS_Store
+
+# IDE
+.idea/
+*.iml
+.vscode/
