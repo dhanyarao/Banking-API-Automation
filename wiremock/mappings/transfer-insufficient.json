@@ -1,0 +1,22 @@
+{
+  "name": "Fund Transfer - Insufficient Funds",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/transfer",
+    "headers": {
+      "Authorization": {"matches": "Bearer .+"}
+    },
+    "bodyPatterns": [
+      {"matchesJsonPath": "$[?(@.amount >= 100000)]"}
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "message": "Insufficient funds in the source account",
+      "error": "INSUFFICIENT_FUNDS"
+    }
+  }
+}

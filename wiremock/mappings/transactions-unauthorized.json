@@ -1,0 +1,16 @@
+{
+  "name": "Transaction History - Unauthorized",
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/v1/transactions"
+  },
+  "response": {
+    "status": 401,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "message": "Unauthorized - missing or invalid token",
+      "error": "UNAUTHORIZED"
+    }
+  }
+}

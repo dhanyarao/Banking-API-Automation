@@ -1,0 +1,25 @@
+{
+  "name": "Fund Transfer - Success",
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/transfer",
+    "headers": {
+      "Authorization": {"matches": "Bearer .+"}
+    },
+    "bodyPatterns": [
+      {"matchesJsonPath": "$[?(@.amount > 0 && @.amount < 100000)]"}
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "transactionId": "TXN-MOCK-001",
+      "referenceNumber": "REF-20260728-001",
+      "status": "SUCCESS",
+      "message": "Transfer completed successfully",
+      "amount": 500.00,
+      "currency": "INR"
+    }
+  }
+}

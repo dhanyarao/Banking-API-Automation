@@ -1,0 +1,20 @@
+{
+  "name": "Fund Transfer - Validation Error",
+  "priority": 8,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/transfer",
+    "headers": {
+      "Authorization": {"matches": "Bearer .+"}
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": {"Content-Type": "application/json"},
+    "jsonBody": {
+      "message": "Validation failed - amount must be greater than zero and toAccount is required",
+      "error": "VALIDATION_ERROR",
+      "errors": ["amount", "toAccount"]
+    }
+  }
+}
