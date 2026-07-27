@@ -1,8 +1,8 @@
 # Playwright API Test Suite – Banking Application
 
-Modern, maintainable API automation using **Playwright Test** (JavaScript).
+Modern, maintainable API automation using **Playwright Test** (JavaScript) with **Allure** reporting.
 
-This suite covers the same banking scenarios we built earlier:
+This suite covers:
 
 - Authentication (login positive + negative)
 - Account Balance
@@ -19,10 +19,9 @@ This suite covers the same banking scenarios we built earlier:
 | Reusable auth | Custom fixture (`utils/fixtures.js`) injects `apiContext` with Bearer token |
 | DRY helpers | `utils/api-helpers.js` |
 | Clear folder structure | `tests/`, `utils/`, `config/` |
-| Controlled parallelism | `fullyParallel: false` (banking APIs often rate-limit) |
-| Rich reporting | HTML + JSON reporters |
+| Controlled parallelism | `fullyParallel: false` |
+| Rich reporting | Playwright HTML + **Allure** |
 | No hardcoded secrets | All credentials come from `.env` |
-| Flexible assertions | Handle different response shapes from real banks |
 
 ---
 
@@ -30,26 +29,47 @@ This suite covers the same banking scenarios we built earlier:
 
 ```bash
 cd playwright
-
-# 1. Install dependencies
 npm install
+cp config/.env.example config/.env   # edit with real values
+npm test
+```
 
-# 2. Copy and edit environment file
-cp config/.env.example config/.env
-# → update BASE_URL, USERNAME, PASSWORD, ACCOUNT_ID etc.
+---
 
-# 3. Run all tests
+## Allure Reporting
+
+```bash
+# Run tests (Allure results written automatically)
 npm test
 
-# 4. Run specific module
-npm run test:auth
-npm run test:accounts
-npm run test:transfer
-npm run test:transactions
+# Generate & open Allure report
+npm run allure:generate
+npm run allure:open
 
-# 5. View HTML report
-npm run test:report
+# One-liner
+npm run test:allure
+
+# Serve without static generation
+npm run allure:serve
 ```
+
+Install Allure CLI locally if needed:
+```bash
+npm install -g allure-commandline
+# or download from https://github.com/allure-framework/allure2/releases
+```
+
+### What you get
+
+- Test status timeline
+- Suites / behaviors
+- Environment info (BASE_URL, Framework, etc.)
+- Retry history
+- Failure categories
+
+### CI
+
+GitHub Actions generates the Allure report and uploads it as artifact **`allure-report-playwright`**.
 
 ---
 
@@ -58,32 +78,17 @@ npm run test:report
 ```
 playwright/
 ├── package.json
-├── playwright.config.js
+├── playwright.config.js      ← includes allure-playwright reporter
 ├── config/
-│   ├── .env.example
-│   └── .env                 ← your real values (git-ignored)
+│   └── .env.example
 ├── utils/
-│   ├── api-helpers.js       ← login helper + context factory
-│   └── fixtures.js          ← custom test + apiContext fixture
+│   ├── api-helpers.js
+│   └── fixtures.js
 └── tests/
     ├── auth.spec.js
     ├── accounts.spec.js
     ├── fund-transfer.spec.js
     └── transactions.spec.js
 ```
-
----
-
-## How Authentication Works (Best Practice)
-
-1. `fixtures.js` creates a custom `test` object.
-2. Before any test that needs auth, it calls `getAuthToken()`.
-3. It builds a new `APIRequestContext` that already contains  
-   `Authorization: Bearer <token>`.
-4. Tests simply use `{ apiContext }` – no login code duplicated.
-
-This is cleaner than putting login inside every `beforeEach`.
-
----
 
 Happy automating!
