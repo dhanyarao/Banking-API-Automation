@@ -1,11 +1,12 @@
 # Banking API Automation – Practical Package
 
-This package contains **two complete automation approaches** for the same Banking APIs we covered in the test cases:
+This package contains **three complete automation approaches** for the same Banking APIs we covered in the test cases:
 
 1. **Postman + Newman** (no-code / low-code)
 2. **Rest Assured + TestNG** (Java code-based)
+3. **Playwright** (JavaScript) – modern API testing with best practices
 
-Both cover the core scenarios:
+All three cover the core scenarios:
 - Login (valid + invalid)
 - Get Account Balance (positive + negative)
 - Fund Transfer (success, insufficient funds, missing fields)
@@ -84,12 +85,38 @@ Or run individual classes from the IDE.
 
 ---
 
+## 3. Playwright (JavaScript) – Modern & Recommended for Full-Stack
+
+### Folder: `playwright/`
+
+Clean structure with fixtures, helpers, environment config and HTML reports.
+
+```bash
+cd playwright
+npm install
+cp config/.env.example config/.env   # edit with real values
+npm test
+npm run test:report
+```
+
+See `playwright/README.md` for full details and best practices.
+
+| Feature | Postman + Newman | Rest Assured | Playwright |
+|---------|------------------|--------------|------------|
+| Language | None / JS scripts | Java | JavaScript / TypeScript |
+| Same tool for UI later | No | No | **Yes** |
+| Custom fixtures | Limited | Manual | Native |
+| Learning curve | Lowest | Medium | Low-Medium |
+
+---
+
 ## Recommended Learning Path
 
 1. Import & run the Postman collection manually → understand the flow
 2. Run it with Newman → see HTML reports
 3. Open the Rest Assured project → map each Postman request to the corresponding Java test
-4. Add more assertions and negative cases yourself
+4. Explore the Playwright suite → notice the fixture pattern
+5. Add more assertions and negative cases yourself
 
 ---
 
