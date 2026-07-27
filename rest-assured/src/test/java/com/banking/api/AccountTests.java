@@ -1,20 +1,18 @@
 package com.banking.api;
 
+import io.qameta.allure.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-/**
- * Account Balance API tests.
- * Depends on successful login (token).
- */
+@Epic("Banking API")
+@Feature("Accounts")
 public class AccountTests extends BaseTest {
 
     @BeforeClass
     public void ensureToken() {
-        // If token is not yet set (running this class alone), perform login
         if (authToken == null || authToken.isEmpty()) {
             authToken = given()
                     .contentType("application/json")
@@ -28,6 +26,9 @@ public class AccountTests extends BaseTest {
     }
 
     @Test(priority = 1, description = "Get balance with valid token")
+    @Story("Get Balance - Happy Path")
+    @Severity(SeverityLevel.BLOCKER)
+    @Description("Verify that a valid Bearer token returns available balance and currency")
     public void testGetBalancePositive() {
         given()
                 .spec(requestSpec)
@@ -42,6 +43,9 @@ public class AccountTests extends BaseTest {
     }
 
     @Test(priority = 2, description = "Get balance with invalid token should return 401")
+    @Story("Get Balance - Negative")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verify that an invalid token is rejected with 401")
     public void testGetBalanceInvalidToken() {
         given()
                 .spec(requestSpec)
@@ -53,6 +57,9 @@ public class AccountTests extends BaseTest {
     }
 
     @Test(priority = 3, description = "Get balance without Authorization header should return 401")
+    @Story("Get Balance - Negative")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verify that missing Authorization header results in 401")
     public void testGetBalanceNoAuthHeader() {
         given()
                 .spec(requestSpec)
