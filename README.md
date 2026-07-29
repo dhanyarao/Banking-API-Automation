@@ -4,7 +4,8 @@
 [![Allure Report](https://img.shields.io/badge/Allure-Report-orange?logo=allure)](https://dhanyarao.github.io/Banking-API-Automation/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Full step-by-step runbook:** [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md)
+**Full step-by-step runbook:** [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md)  
+**Video script outline:** [VIDEO_SCRIPT.md](./VIDEO_SCRIPT.md)
 
 This package contains **three complete automation approaches** for the same Banking APIs:
 
@@ -91,9 +92,10 @@ Workflow: `.github/workflows/ci.yml`
 ## Recommended Learning Path
 
 1. Read [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md)
-2. Run WireMock + Newman
-3. Explore Playwright fixtures
-4. Explore Rest Assured + Allure
-5. Watch CI on GitHub Actions
+2. Optionally follow [VIDEO_SCRIPT.md](./VIDEO_SCRIPT.md) as a demo outline
+3. Run WireMock + Newman
+4. Explore Playwright fixtures
+5. Explore Rest Assured + Allure
+6. Watch CI on GitHub Actions
 
 Happy automating!
