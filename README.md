@@ -4,6 +4,8 @@
 [![Allure Report](https://img.shields.io/badge/Allure-Report-orange?logo=allure)](https://dhanyarao.github.io/Banking-API-Automation/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Full step-by-step runbook:** [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md)
+
 This package contains **three complete automation approaches** for the same Banking APIs:
 
 1. **Postman + Newman** (no-code / low-code)
@@ -15,6 +17,23 @@ All three cover:
 - Account Balance
 - Fund Transfer (success, insufficient funds, validation errors)
 - Transaction History
+- Boundary / edge cases (min amount, concurrent, special chars, large amounts)
+
+---
+
+## Quick start (with WireMock mock)
+
+```bash
+# Terminal 1 – mock API
+cd wiremock && ./start-wiremock.sh
+
+# Terminal 2 – Newman
+cd postman
+newman run Banking_API_Automation.postman_collection.json \
+  -e Banking-Mock.postman_environment.json --reporters cli
+```
+
+See **[EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md)** for Playwright, Rest Assured, Allure, CI, and troubleshooting.
 
 ---
 
@@ -24,8 +43,10 @@ All three cover:
 
 ```bash
 cd postman
-chmod +x run-newman.sh
-./run-newman.sh
+newman run Banking_API_Automation.postman_collection.json \
+  -e Banking-Mock.postman_environment.json \
+  --reporters cli,htmlextra \
+  --reporter-htmlextra-export newman-report.html
 ```
 
 ---
@@ -36,8 +57,9 @@ chmod +x run-newman.sh
 
 ```bash
 cd rest-assured
+export BASE_URL=http://localhost:8089
 mvn clean test
-mvn allure:report   # or mvn allure:serve
+mvn allure:serve
 ```
 
 ---
@@ -49,17 +71,10 @@ mvn allure:report   # or mvn allure:serve
 ```bash
 cd playwright
 npm install
-cp config/.env.example config/.env
+# set BASE_URL=http://localhost:8089 in config/.env
 npm test
-npm run test:allure
+npx playwright show-report
 ```
-
-| Feature              | Postman + Newman | Rest Assured | Playwright      |
-|----------------------|------------------|--------------|-----------------|
-| Language             | None / JS        | Java         | JavaScript      |
-| Same tool for UI     | No               | No           | **Yes**         |
-| Custom fixtures      | Limited          | Manual       | Native          |
-| Allure reporting     | Via Newman HTML  | Yes          | Yes             |
 
 ---
 
@@ -67,52 +82,18 @@ npm run test:allure
 
 Workflow: `.github/workflows/ci.yml`
 
-Runs on every push / PR to `main`:
-
-| Job              | Tool              | Output                    |
-|------------------|-------------------|---------------------------|
-| `playwright`     | Playwright        | Allure + HTML artifacts   |
-| `newman`         | Postman + Newman  | HTML + JUnit artifacts    |
-| `rest-assured`   | Maven + TestNG    | Allure + Surefire         |
-| `publish-pages`  | GitHub Pages      | Live Allure reports       |
-
-### Live Allure Reports
-
-**URL:** https://dhanyarao.github.io/Banking-API-Automation/
-
-| Path | Report |
-|------|--------|
-| `/` | Landing page |
-| `/playwright/` | Playwright Allure report |
-| `/rest-assured/` | Rest Assured Allure report |
-
-### One-time setup for GitHub Pages
-
-1. Repo → **Settings → Pages**
-2. **Source** → select **GitHub Actions**
-3. Save
-
-Then push to `main` (or run the workflow manually). Reports will appear at the URL above.
-
-### Secrets (recommended)
-
-| Secret           | Example                    |
-|------------------|----------------------------|
-| `BASE_URL`       | `https://api.yourbank.com` |
-| `API_USERNAME`   | `testuser01`               |
-| `API_PASSWORD`   | `your-real-password`       |
-| `ACCOUNT_ID`     | `1234567890`               |
-| `FROM_ACCOUNT`   | `1234567890`               |
-| `TO_ACCOUNT`     | `9876543210`               |
+- Starts WireMock in Docker
+- Runs Playwright, Newman, Rest Assured
+- Publishes Allure to https://dhanyarao.github.io/Banking-API-Automation/
 
 ---
 
 ## Recommended Learning Path
 
-1. Run Postman collection manually
-2. Run Newman + study HTML report
-3. Explore Rest Assured + Allure annotations
-4. Explore Playwright fixtures + Allure
-5. Watch reports update on GitHub Pages after each push
+1. Read [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md)
+2. Run WireMock + Newman
+3. Explore Playwright fixtures
+4. Explore Rest Assured + Allure
+5. Watch CI on GitHub Actions
 
 Happy automating!
