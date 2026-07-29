@@ -1,0 +1,16 @@
+{
+  "name": "Get Balance - Non-numeric or suspicious account id",
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/api/v1/accounts/[^0-9][^/]*/balance"
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "message": "Invalid account id",
+      "error": "BAD_REQUEST"
+    }
+  }
+}
