@@ -1,0 +1,23 @@
+{
+  "name": "Fund Transfer - Negative or Zero Amount",
+  "priority": 3,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/transfer",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$[?(@.amount <= 0)]" }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "message": "Validation failed - amount must be greater than zero",
+      "error": "VALIDATION_ERROR",
+      "errors": ["amount"]
+    }
+  }
+}

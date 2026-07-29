@@ -1,0 +1,26 @@
+{
+  "name": "Fund Transfer - Min Amount 0.01",
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/transfer",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$[?(@.amount == 0.01)]" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "transactionId": "TXN-MOCK-MIN-001",
+      "referenceNumber": "REF-MIN-0.01",
+      "status": "SUCCESS",
+      "message": "Transfer completed successfully",
+      "amount": 0.01,
+      "currency": "INR"
+    }
+  }
+}

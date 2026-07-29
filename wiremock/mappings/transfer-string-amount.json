@@ -1,0 +1,26 @@
+{
+  "name": "Fund Transfer - Amount as String (coerced)",
+  "priority": 4,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/transfer",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$[?(@.amount == '500.00' || @.amount == '500')]" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "transactionId": "TXN-MOCK-STR-001",
+      "referenceNumber": "REF-STR-500",
+      "status": "SUCCESS",
+      "message": "Transfer completed (amount coerced from string)",
+      "amount": 500.00,
+      "currency": "INR"
+    }
+  }
+}
